@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application Architecture</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.8;
+            font-size: 1.1em;
+        }
+        
+        .diagram-container {
+            padding: 40px;
+            background: #f8f9fa;
+        }
+        
+        #mermaidDiagram {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .controls {
+            padding: 20px 40px;
+            background: white;
+            border-top: 1px solid #eee;
+            text-align: center;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .zoom-controls {
+            margin-top: 15px;
+        }
+        
+        .zoom-btn {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #dee2e6;
+            padding: 8px 16px;
+            margin: 0 5px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .zoom-btn:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+        
+        .info-panel {
+            padding: 30px 40px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .info-panel h3 {
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+        
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .tech-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+        
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .diagram-container {
+                padding: 20px;
+            }
+            
+            .controls {
+                padding: 15px 20px;
+            }
+            
+            .btn {
+                margin: 5px;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Chat Application Architecture</h1>
+            <p>Real-time messaging system architecture diagram</p>
+        </div>
+        
+        <div class="diagram-container">
+            <div id="loading" class="loading">Loading diagram...</div>
+            <div id="mermaidDiagram" style="display: none;"></div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" onclick="regenerateDiagram()">🔄 Refresh Diagram</button>
+            <button class="btn" onclick="exportDiagram()">📥 Export as SVG</button>
+            <button class="btn" onclick="toggleFullscreen()">🔍 Fullscreen</button>
+            
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="zoomIn()">Zoom In</button>
+                <button class="zoom-btn" onclick="resetZoom()">Reset</button>
+                <button class="zoom-btn" onclick="zoomOut()">Zoom Out</button>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <h3>Architecture Overview</h3>
+            <p>This diagram represents a scalable real-time chat application architecture with the following key components:</p>
+            
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <strong>Frontend:</strong><br>
+                    Web & Mobile Apps with real-time WebSocket connections
+                </div>
+                <div class="tech-item">
+                    <strong>Backend Services:</strong><br>
+                    Microservices architecture with dedicated services
+                </div>
+                <div class="tech-item">
+                    <strong>Real-time:</strong><br>
+                    WebSocket servers with message queuing
+                </div>
+                <div class="tech-item">
+                    <strong>Storage:</strong><br>
+                    PostgreSQL, Redis, and cloud file storage
+                </div>
+                <div class="tech-item">
+                    <strong>External:</strong><br>
+                    Push notifications and CDN for media delivery
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mermaid configuration
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'default',
+            themeVariables: {
+                primaryColor: '#667eea',
+                primaryTextColor: '#2c3e50',
+                primaryBorderColor: '#764ba2',
+                lineColor: '#34495e',
+                secondaryColor: '#f093fb',
+                tertiaryColor: '#f8f9fa',
+                background: '#ffffff',
+                mainBkg: '#ffffff',
+                secondBkg: '#f8f9fa',
+                tertiaryBkg: '#e9ecef'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            },
+            securityLevel: 'loose'
+        });
+
+        // Diagram definition
+        const diagramDefinition = `
+graph TB
+    subgraph "Client Layer"
+        WebApp[Web Application]
+        MobileApp[Mobile Application]
+    end
+    
+    subgraph "API Gateway"
+        Gateway[API Gateway<br/>Authentication & Rate Limiting]
+    end
+    
+    subgraph "Application Layer"
+        ChatService[Chat Service]
+        UserService[User Management Service]
+        MediaService[Media Upload Service]
+        NotificationService[Notification Service]
+    end
+    
+    subgraph "Real-time Communication"
+        WebSocket[WebSocket Server<br/>Socket.IO]
+        MessageQueue[Message Queue<br/>Redis/RabbitMQ]
+    end
+    
+    subgraph "Storage Layer"
+        Database[(PostgreSQL<br/>User & Chat Data)]
+        FileStorage[(File Storage<br/>AWS S3/MinIO<br/>Images, Videos, PDFs)]
+        Cache[(Redis Cache<br/>Active Sessions)]
+    end
+    
+    subgraph "External Services"
+        FCM[Firebase Cloud Messaging<br/>Push Notifications]
+        CDN[CDN<br/>Media Delivery]
+    end
+    
+    WebApp --> Gateway
+    MobileApp --> Gateway
+    Gateway --> ChatService
+    Gateway --> UserService
+    Gateway --> MediaService
+    
+    ChatService --> WebSocket
+    ChatService --> Database
+    ChatService --> Cache
+    ChatService --> MessageQueue
+    
+    UserService --> Database
+    UserService --> Cache
+    
+    MediaService --> FileStorage
+    MediaService --> CDN
+    
+    WebSocket --> MessageQueue
+    MessageQueue --> NotificationService
+    NotificationService --> FCM
+    
+    WebSocket -.-> WebApp
+    WebSocket -.-> MobileApp
+        `;
+
+        let currentZoom = 1;
+        let isFullscreen = false;
+
+        // Generate diagram
+        async function generateDiagram() {
+            try {
+                const element = document.getElementById('mermaidDiagram');
+                const loadingElement = document.getElementById('loading');
+                
+                // Clear previous content
+                element.innerHTML = '';
+                
+                // Generate the diagram
+                const { svg } = await mermaid.render('mermaid-diagram', diagramDefinition);
+                element.innerHTML = svg;
+                
+                // Hide loading and show diagram
+                loadingElement.style.display = 'none';
+                element.style.display = 'block';
+                
+                // Apply initial zoom
+                applyZoom();
+                
+            } catch (error) {
+                console.error('Error generating diagram:', error);
+                document.getElementById('mermaidDiagram').innerHTML = 
+                    '<div style="color: red; text-align: center; padding: 50px;">Error generating diagram. Please check console for details.</div>';
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('mermaidDiagram').style.display = 'block';
+            }
+        }
+
+        // Control functions
+        function regenerateDiagram() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('mermaidDiagram').style.display = 'none';
+            setTimeout(generateDiagram, 500);
+        }
+
+        function exportDiagram() {
+            const svg = document.querySelector('#mermaidDiagram svg');
+            if (svg) {
+                const svgData = new XMLSerializer().serializeToString(svg);
+                const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+                const svgUrl = URL.createObjectURL(svgBlob);
+                
+                const downloadLink = document.createElement('a');
+                downloadLink.href = svgUrl;
+                downloadLink.download = 'chat-architecture-diagram.svg';
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                URL.revokeObjectURL(svgUrl);
+            }
+        }
+
+        function toggleFullscreen() {
+            const container = document.querySelector('.container');
+            
+            if (!isFullscreen) {
+                container.style.position = 'fixed';
+                container.style.top = '0';
+                container.style.left = '0';
+                container.style.width = '100vw';
+                container.style.height = '100vh';
+                container.style.maxWidth = 'none';
+                container.style.zIndex = '9999';
+                container.style.borderRadius = '0';
+                isFullscreen = true;
+            } else {
+                container.style.position = 'static';
+                container.style.width = 'auto';
+                container.style.height = 'auto';
+                container.style.maxWidth = '1200px';
+                container.style.zIndex = 'auto';
+                container.style.borderRadius = '15px';
+                isFullscreen = false;
+            }
+        }
+
+        function zoomIn() {
+            currentZoom = Math.min(currentZoom * 1.2, 3);
+            applyZoom();
+        }
+
+        function zoomOut() {
+            currentZoom = Math.max(currentZoom / 1.2, 0.3);
+            applyZoom();
+        }
+
+        function resetZoom() {
+            currentZoom = 1;
+            applyZoom();
+        }
+
+        function applyZoom() {
+            const svg = document.querySelector('#mermaidDiagram svg');
+            if (svg) {
+                svg.style.transform = `scale(${currentZoom})`;
+                svg.style.transformOrigin = 'center top';
+            }
+        }
+
+        // Initialize diagram when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            generateDiagram();
+        });
+
+        // Handle escape key for fullscreen
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && isFullscreen) {
+                toggleFullscreen();
+            }
+        });
+    </script>
+</body>
+</html>
